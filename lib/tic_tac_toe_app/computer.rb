@@ -11,16 +11,20 @@ module TicTacToeApp
     end
 
     def move(board)
-      # Extremely dumb AI.
       available_positions = board.blanks
       strategy = Strategy.new(board, @play_symbol)
       if available_positions.size > 0
-        # The order of the strategies is important.
+        # The order of the strategies is important. In theory it should never get to use the
+        # last one (random_empty_position).
         move_position = strategy.win_position ||
             strategy.block_position ||
             strategy.fork_position ||
-            # TODO: forks and more
-            available_positions[0]
+            strategy.block_fork_position ||
+            strategy.center_position ||
+            strategy.opposite_corner ||
+            strategy.empty_corner ||
+            strategy.empty_side ||
+            strategy.random_empty_position
 
         board.place_move(move_position, @play_symbol)
       else
@@ -30,15 +34,54 @@ module TicTacToeApp
 
     # All the public methods in this class return either a position on the board (0-8) or nil
     # if the move can not be made.
+    #
+    # For an invulnerable AI the minimax algorithm seems to do the job, but I decided to
+    # go for my own implementation given the short period of implementation time.
     class Strategy
-      attr_reader :board, :play_symbol
-
       def initialize(board, play_symbol)
         @board = board
         # TODO: validate.
         @play_symbol = play_symbol
         @opponent_play_symbol = (TicTacToeApp::Board::ALLOWED_PLAY_SYMBOLS - [@play_symbol])[0]
       end
+
+      def win_position
+        random_position(win_positions(@board))
+      end
+
+      def block_position
+        random_position(block_positions(@board))
+      end
+
+      def fork_position
+        random_position(fork_positions)
+      end
+
+      def block_fork_position
+        random_position(block_fork_positions)
+      end
+
+      def center_position
+        @board.blanks.include?(4) ? 4 : nil
+      end
+
+      def opposite_corner
+        random_position(opposite_corners)
+      end
+
+      def empty_corner
+        random_position(empty_corners)
+      end
+
+      def empty_side
+        random_position(empty_sides)
+      end
+
+      def random_empty_position
+        random_position(@board.blanks)
+      end
+
+      private
 
       def win_positions(board)
         positions = []
@@ -52,10 +95,6 @@ module TicTacToeApp
         positions
       end
 
-      def win_position
-        random_position(win_positions(@board))
-      end
-
       def block_positions(board)
         positions = []
         [board.rows, board.columns, board.diagonals].each do |block_collections|
@@ -66,10 +105,6 @@ module TicTacToeApp
         end
 
         positions
-      end
-
-      def block_position
-        random_position(block_positions(@board))
       end
 
       # Fill each blank and if there's more than two winning positions than we have a fork.
@@ -90,11 +125,53 @@ module TicTacToeApp
         positions
       end
 
-      def fork_position
-        random_position(fork_positions)
+      # Fill each blank and if there's more than two blocking positions than we have a fork block.
+      def block_fork_positions
+        board = @board.clone
+        positions = []
+
+        board.blanks.each do |blank_position|
+          board.place_move(blank_position, @play_symbol)
+
+          if block_positions(board).size >= 2
+            positions << blank_position
+          end
+
+          board.undo_move(blank_position)
+        end
+
+        positions
       end
 
-      private
+      def valid_corner_positions(corner_positions)
+        positions = []
+
+        corner_positions.each do |corner_coordinates|
+          if @board.field[corner_coordinates[0]] == @opponent_play_symbol &&
+              @board.field[corner_coordinates[1]].nil?
+            positions << corner_coordinates[1]
+          end
+        end
+
+        positions
+      end
+
+      def opposite_corners
+        positions = []
+        # TODO: swap values programatically.
+        positions += valid_corner_positions([[0, 7], [2, 5]])
+        positions += valid_corner_positions([[7, 0], [5, 2]])
+
+        positions
+      end
+
+      def empty_corners
+        @board.blanks & [0, 2, 6, 8]
+      end
+
+      def empty_sides
+        @board.blanks & [1, 3, 5, 7]
+      end
 
       def random_position(positions)
         positions.empty? ? nil : positions.sample

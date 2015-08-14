@@ -1,19 +1,62 @@
 <!doctype html>
 <html ng-app="ticTacToeApp">
-    <head>
-        <title>TickTackToe App</title>
-    </head>
+<link rel="stylesheet" type="text/css" href="resources/css/styles.css">
 
+<head>
+    <title>TickTackToe App</title>
+</head>
     <body ng-controller="MainCtrl">
-        <button ng-click="get()">GET</button>
-        Result : {{resultGet}}
-        <br/>
+        <div>{{field}}</div>
 
-        <input ng-model="something"/>
+        <div>
+            <button ng-click="newGame()">Start new game</button>
+        </div>
 
-        <button ng-click="post(something)">POST</button>
-        Result : {{resultPost}}
+        <br /><br /><br />
 
+        <div ng-hide="isUndefinedOrNull(field)">
+            <div>
+                <div ng-click="tickPosition(0)"
+                     class="cell">{{field[0]}}</div>
+                <div ng-click="tickPosition(1)"
+                     class="cell">{{field[1]}}</div>
+                <div ng-click="tickPosition(2)"
+                     class="cell">{{field[2]}}</div>
+            </div>
+            <div>
+                <div ng-click="tickPosition(3)"
+                     class="cell">{{field[3]}}</div>
+                <div ng-click="tickPosition(4)"
+                     class="cell">{{field[4]}}</div>
+                <div ng-click="tickPosition(5)"
+                     class="cell">{{field[5]}}</div>
+            </div>
+            <div>
+                <div ng-click="tickPosition(6)"
+                     class="cell">{{field[6]}}</div>
+                <div ng-click="tickPosition(7)"
+                     class="cell">{{field[7]}}</div>
+                <div ng-click="tickPosition(8)"
+                     class="cell">{{field[8]}}</div>
+            </div>
+        </div>
+
+        <div ng-hide="isUndefinedOrNull(draw)">
+            Draw game!
+        </div>
+
+        <div ng-hide="isUndefinedOrNull(winner)">
+            {{winner}} wins!
+        </div>
+
+        <!--<button ng-click="getMovie()">GET</button>-->
+        <!--Result : {{resultGet}}-->
+        <!--<br/>-->
+
+        <!--<input ng-model="movie"/>-->
+
+        <!--<button ng-click="postMovie(movie)">POST</button>-->
+        <!--Result : {{resultPost}}-->
         <script src="http://code.angularjs.org/1.4.3/angular.min.js"></script>
         <script src="app.js"></script>
     </body>

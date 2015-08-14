@@ -1,7 +1,10 @@
 require 'sinatra'
 require 'json'
+require './lib/tic_tac_toe_app/game'
 
 use Rack::Logger
+
+# TODO: using global variables is just awful! There must be a better way of keeping state!
 $game = nil
 $winner = nil
 $draw = nil
@@ -15,20 +18,42 @@ end
 
 set :protection, false
 
-options '/something' do
+get '/new_game' do
+  $game = TicTacToeApp::Game.new
+  $winner = nil
+  $draw = nil
+
+  { field: $game.board.field }.to_json
+end
+
+options '/do_move' do
   200
 end
 
-get '/something' do
-  { result: 'It works'}.to_json
-end
-
-post '/something' do
+post '/do_move' do
   begin
     params.merge! JSON.parse(request.env['rack.input'].read)
   rescue JSON::ParserError
     logger.error 'Cannot parse request body.'
   end
 
-  { result: params[:something], seen: true }.to_json
+  $game.player_move params[:position]
+  unless game_ended?
+    $game.cpu_move
+  end
+  game_ended?
+
+  { field: $game.board.field, winner: $winner, draw: $draw }.to_json
+end
+
+def game_ended?
+  if $game.game_ended?
+    if $game.draw?
+      $draw = $game.draw?
+    else
+      $winner = $game.winner
+    end
+  end
+
+  $game.game_ended?
 end

@@ -1,0 +1,11 @@
+.cell {
+    display: table-cell;
+    width: 100px;
+    height: 100px;
+    vertical-align: middle;
+    text-align: center;
+    font-size: 36px;
+    font-weight: bold;
+    border: 1px solid black;
+    cursor: crosshair;
+}

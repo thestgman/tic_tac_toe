@@ -5,6 +5,8 @@ module TicTacToeApp
   class Board
     ALLOWED_PLAY_SYMBOLS = %w(x o)
 
+    attr_reader :field
+
     def initialize
       @field = [nil, nil, nil, nil, nil, nil, nil, nil, nil]
       @cells = @field.each_with_index.map {|_, i| i}

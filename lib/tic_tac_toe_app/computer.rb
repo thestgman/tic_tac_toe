@@ -18,6 +18,7 @@ module TicTacToeApp
         # The order of the strategies is important.
         move_position = strategy.win_position ||
             strategy.block_position ||
+            strategy.fork_position ||
             # TODO: forks and more
             available_positions[0]
 
@@ -39,32 +40,65 @@ module TicTacToeApp
         @opponent_play_symbol = (TicTacToeApp::Board::ALLOWED_PLAY_SYMBOLS - [@play_symbol])[0]
       end
 
-      # TODO: for some fun, instead of returning the first fit value from the *_position functions
-      # could collect all positions which fit the requirement and return one at random.
-
-      def win_position
-        [@board.rows, @board.columns, @board.diagonals].each do |winning_collections|
-          winning_collections.each do |diagonal|
-            position = find_empty_position(diagonal, @play_symbol)
-            return position unless position.nil?
+      def win_positions(board)
+        positions = []
+        [board.rows, board.columns, board.diagonals].each do |winning_collections|
+          winning_collections.each do |collection|
+            position = find_empty_position(collection, @play_symbol)
+            positions << position unless position.nil?
           end
         end
 
-        nil
+        positions
+      end
+
+      def win_position
+        random_position(win_positions(@board))
+      end
+
+      def block_positions(board)
+        positions = []
+        [board.rows, board.columns, board.diagonals].each do |block_collections|
+          block_collections.each do |collection|
+            position = find_empty_position(collection, @opponent_play_symbol)
+            positions << position unless position.nil?
+          end
+        end
+
+        positions
       end
 
       def block_position
-        [@board.rows, @board.columns, @board.diagonals].each do |winning_collections|
-          winning_collections.each do |diagonal|
-            position = find_empty_position(diagonal, @opponent_play_symbol)
-            return position unless position.nil?
+        random_position(block_positions(@board))
+      end
+
+      # Fill each blank and if there's more than two winning positions than we have a fork.
+      def fork_positions
+        board = @board.clone
+        positions = []
+
+        board.blanks.each do |blank_position|
+          board.place_move(blank_position, @play_symbol)
+
+          if win_positions(board).size >= 2
+            positions << blank_position
           end
+
+          board.undo_move(blank_position)
         end
 
-        nil
+        positions
+      end
+
+      def fork_position
+        random_position(fork_positions)
       end
 
       private
+
+      def random_position(positions)
+        positions.empty? ? nil : positions.sample
+      end
 
       # Finds an empty position given that the other 2 positions are both filled with play_symbol.
       def find_empty_position(filled_positions, desired_play_symbol)

@@ -4,6 +4,7 @@ require_relative './board'
 require_relative 'player'
 require_relative 'computer'
 
+# TODO: add a proper logger, the server obfuscates the stacktrace.
 module TicTacToeApp
   # Contains logic for playing the game.
   class Game

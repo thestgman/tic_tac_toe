@@ -77,6 +77,11 @@ module TicTacToeApp
       @representation[position] = play_symbol
     end
 
+    def undo_move(position)
+      validate_position(position, true)
+      @representation[position] = nil
+    end
+
     def to_s
       "#{field[0..2].to_s}\n#{field[3..5].to_s}\n#{field[6..8].to_s}"
     end
@@ -89,12 +94,12 @@ module TicTacToeApp
       end
     end
 
-    def validate_position(position)
+    def validate_position(position, skip_filled_check=false)
       unless positions.include?(position)
         throw "Illegal position: [#{position}]. Valid values: #{positions}"
       end
 
-      unless blanks.include?(position)
+      unless skip_filled_check || blanks.include?(position)
         throw "Illegal position: [#{position}]. Already filled with [#{field[position]}]"
       end
     end

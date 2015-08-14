@@ -23,7 +23,7 @@ get '/new_game' do
   $winner = nil
   $draw = nil
 
-  { field: $game.board.field }.to_json
+  {field: $game.board.field}.to_json
 end
 
 options '/do_move' do
@@ -43,7 +43,7 @@ post '/do_move' do
   end
   game_ended?
 
-  { field: $game.board.field, winner: $winner, draw: $draw }.to_json
+  {field: $game.board.field, winner: $winner, draw: $draw}.to_json
 end
 
 def game_ended?
